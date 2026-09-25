@@ -2,11 +2,9 @@
 
 Relay is a customer support desk with a visible routing dispatcher. Its **recommended setup uses local Ollama models and no paid API calls**. It answers routine questions from approved policies, sends difficult questions to a stronger local model, and uses a deterministic fallback if a model fails. The app has a customer chat and a company decision monitor, plus conversation replay, human review tickets, a cost comparison, and a human feedback workflow.
 
-For the short judge setup and demo sequence, see [SUBMISSION.md](SUBMISSION.md).
+## Local-first design
 
-## Public-repository demo choice
-
-This hackathon solution is submitted in a public repository, so it does not include or require private API keys. Instead of depending on separate hosted-provider credentials, the default setup runs the routing and customer answers with free local Ollama models. These are real local model calls: `qwen3:1.7b` handles routine questions and routing, while `deepseek-r1:8b` handles complex cases. The outage switch deliberately simulates a provider failure to demonstrate the deterministic fallback. Optional hosted adapters remain disabled in free mode, and `.env` is excluded from Git.
+Relay is published in a public repository without private API keys. Its default configuration runs routing and customer answers through local Ollama models rather than requiring separate hosted-provider credentials. These are real local model calls: `qwen3:1.7b` handles routine questions and routing, while `deepseek-r1:8b` handles complex cases. The outage switch simulates a provider failure so the deterministic fallback can be observed. Optional hosted adapters remain disabled in free mode, and `.env` is excluded from Git.
 
 ## Run it
 
@@ -19,9 +17,9 @@ ollama pull deepseek-r1:8b
 node server.mjs
 ```
 
-Ensure Ollama is running, then open [http://localhost:3000](http://localhost:3000). The badge should say **FREE LOCAL MODELS**. Conversations, feedback, preference pairs, and tickets are stored in `data/support.json`. To preview the interface without downloading models, skip the `.env` copy and start the server; it will clearly say **FREE DEMO MODE** and use deterministic example answers.
+With Ollama running, the app is available at [http://localhost:3000](http://localhost:3000) and displays **FREE LOCAL MODELS**. Conversations, feedback, preference pairs, and tickets are stored in `data/support.json`. Without the `.env` copy or downloaded models, the interface runs in **FREE DEMO MODE** with deterministic example answers.
 
-To populate a **fresh** local store with realistic sample questions and actual Ollama responses, run `node scripts/seed-live-demo.mjs` in another terminal while the server is running. The script creates six conversations covering routine FAQs, an unsupported address change, a contract escalation, a simulated outage, and an unrelated coding request. It also creates two ratings, one reviewed preference pair, and a human-review ticket, then checks replay. The questions are synthetic demo examples; the model responses and recorded latencies come from live local calls. The script adds data and does not clear an existing store. `data/` is ignored by Git, so a fresh checkout must run the script to see these examples.
+`node scripts/seed-live-demo.mjs` populates a fresh local store while the server is running. It creates six conversations covering routine FAQs, an unsupported address change, a contract escalation, a simulated outage, and an unrelated coding request. It also creates two ratings, one reviewed preference pair, and a human-review ticket, then checks replay. The questions are synthetic examples; the model responses and recorded latencies come from live local calls. The script adds data and does not clear an existing store. `data/` is ignored by Git.
 
 The supplied `.env.example` selects these models:
 
@@ -29,19 +27,18 @@ The supplied `.env.example` selects these models:
 - `deepseek-r1:8b` handles complex cases, grounded in the example policies.
 - A scope guardrail redirects unrelated requests such as coding questions without calling a model. Contract disputes and support questions with no matching policy go to the advanced path.
 
-You may substitute another small and large Ollama model by changing `OLLAMA_MODEL` and `OLLAMA_ADVANCED_MODEL`. Model downloads use disk space and bandwidth, and local inference uses electricity, but these paths have no metered API charge. If a model call fails, the trace records the failure and the response uses verified policy text or asks for human review. Routine model answers must cite an approved source ID or they are rejected. The routine answer model receives only the top matching policy to reduce cross-policy mixing.
+The small and advanced models can be changed through `OLLAMA_MODEL` and `OLLAMA_ADVANCED_MODEL`. Model downloads use disk space and bandwidth, and local inference uses electricity, but these paths have no metered API charge. If a model call fails, the trace records the failure and the response uses verified policy text or asks for human review. Routine model answers must cite an approved source ID or they are rejected. The routine answer model receives only the top matching policy to reduce cross-policy mixing.
 
-`SUPPORT_MODE=free` is the default and ignores OpenAI and Jev keys even if they are present. A NVIDIA NIM key is **not required or read**. `SUPPORT_MODE=external` and `ROUTER_PROVIDER=jev` opt into hosted APIs and may incur charges; use them only if you later choose to. Jev returns typed decisions rather than customer-facing answers, as described in the [TypeSafe API reference](https://docs.typesafe.ai/api).
+`SUPPORT_MODE=free` is the default and ignores OpenAI and Jev keys even if they are present. A NVIDIA NIM key is **not required or read**. `SUPPORT_MODE=external` and `ROUTER_PROVIDER=jev` enable optional hosted APIs and may incur charges. Jev returns typed decisions rather than customer-facing answers, as described in the [TypeSafe API reference](https://docs.typesafe.ai/api).
 
-## Three-minute judge walkthrough
+## Example workflows
 
-1. In **Customer view**, ask **“When will my refund arrive?”** The small local Qwen model returns a cited FAQ answer.
-2. Ask **“My signed contract contradicts your refund policy.”** The dispatcher selects the advanced DeepSeek model, which offers human review rather than deciding a contract dispute.
-3. Switch to **Company view** to inspect the recorded scope, policy, routing, model, and fallback steps. Turn on **Simulate advanced outage**, return to Customer view in the same tab, and ask the contract question again. The response asks for human review and the trace records the simulated outage.
-4. Return to Company view and click **Replay this conversation**. Move the threshold slider and compare routes, relative model work, and estimated latency against using the large local model for everything. Both paths have $0 API charges.
-5. Rate an answer **Needs work**, open **Insights & feedback**, review it, and save a preferred answer. Download the resulting JSONL preference dataset. The same page shows estimated API charges avoided versus using a paid model for every recorded question.
-6. In Customer view, click **Request human review**. The ticket appears under **Insights & feedback** on the company side.
-7. Ask **“Can you write code to add 2 numbers?”** The desk gives a short support-topic redirect. The trace shows an out-of-scope route with no model call.
+- **Routine FAQ:** “When will my refund arrive?” is answered by the small local model with an approved policy citation.
+- **Complex case:** “My signed contract contradicts your refund policy” takes the advanced local route and offers human review instead of deciding a contract dispute.
+- **Outage recovery:** The **Simulate advanced outage** switch triggers a recorded provider failure and a deterministic fallback response.
+- **Decision replay:** **Replay this conversation** recalculates routes at a selected threshold and compares estimated model work and latency.
+- **Feedback and handoff:** Customer ratings feed a review queue, preferred answers can be exported as JSONL, and human review requests appear as tickets.
+- **Scope control:** An unrelated request such as “Can you write code to add 2 numbers?” receives a support-topic redirect without a model call.
 
 ## Architecture
 
@@ -70,7 +67,7 @@ flowchart LR
 
 `lib/knowledge.mjs` contains the example policies and retrieval terms. `lib/router.mjs` calculates a source-match score and applies sensitive-case rules. `lib/local-decision.mjs` asks the small Ollama model for a typed route and validates the result. `lib/providers.mjs` contains the Ollama answer adapters and deterministic fallback. `server.mjs` exposes the API and stores decision traces. `public/` contains the customer chat and company monitor, replay, knowledge, and feedback views. `lib/jev.mjs` remains an optional hosted adapter.
 
-The source-match score is a **heuristic**, not a calibrated probability. The local model chooses a route, while the score and guardrails control whether a routine answer is safe to use. The scope check redirects unrelated tasks before any answer model runs. Sensitive terms such as contracts, legal disputes, and exceptions force advanced routing. Support questions with no matching policy also go directly to the advanced path. If a local model times out or returns an invalid choice, rules take over and the trace records the error. Replace the example policies and evaluate routing on representative support data before real customer use.
+The source-match score is a **heuristic**, not a calibrated probability. The local model chooses a route, while the score and guardrails control whether a routine answer is safe to use. The scope check redirects unrelated tasks before any answer model runs. Sensitive terms such as contracts, legal disputes, and exceptions force advanced routing. Support questions with no matching policy also go directly to the advanced path. If a local model times out or returns an invalid choice, rules take over and the trace records the error. Production use requires approved policies and evaluation on representative support data.
 
 ## Replay and cost calculations
 
@@ -92,19 +89,15 @@ node --test
 node scripts/evaluate.mjs
 ```
 
-The automated journey covers a local FAQ answer, an unrelated coding request, simulated advanced-model failure, safe fallback, replay, negative feedback, preference export, and ticket creation. Local-choice tests use fake Ollama responses to verify routing, escalation, guardrails, outage fallback, and replay. The hand-authored evaluation set in `eval/cases.json` has 23 routine, ambiguous, exception, unknown-policy, and unrelated questions. At the current threshold, all 23 match their expected rule route and specified top source. This small curated set demonstrates the mechanism; it is not evidence of production accuracy or answer quality. The two live local routes were also checked manually on this machine.
+The automated journey covers a local FAQ answer, an unrelated coding request, simulated advanced-model failure, safe fallback, replay, negative feedback, preference export, and ticket creation. Local-choice tests use controlled Ollama responses to verify routing, escalation, guardrails, outage fallback, and replay. The evaluation set in `eval/cases.json` has 23 routine, ambiguous, exception, unknown-policy, and unrelated questions. At the current threshold, all 23 match their expected rule route and specified top source. This curated set demonstrates the routing mechanism; it does not establish production accuracy or answer quality. The live local routes were also checked with Ollama.
 
 ## Current limits
 
-- The included policies are fictional examples. Replace them with approved, versioned documents for a real support desk.
-- Ollama and the named models must be installed to run real AI locally. This machine has `qwen3:1.7b` and `deepseek-r1:8b`.
+- The included policies are fictional examples. A real support desk would require approved, versioned documents.
+- Ollama and the named models must be installed to run local inference.
 - Jev and OpenAI are disabled in free mode. The Jev adapter has contract tests but no live provider validation in this checkout.
 - The local answer guard checks for a source ID but cannot prove every generated claim is supported. Human review remains necessary for sensitive cases.
-- The scope guard is a lightweight rule set and may misclassify unusual wording. Test it on real support and unrelated queries before public use.
+- The scope guard is a lightweight rule set and may misclassify unusual wording; broader evaluation is needed before public use.
 - Tickets are stored in the local app; no email or external helpdesk integration is included.
-- The server binds to localhost and has no accounts or access control. Add authentication, data retention controls, and a persistent managed database before public deployment.
+- The server binds to localhost and has no accounts or access control. Public deployment would require authentication, data retention controls, and a persistent managed database.
 - The customer and company views are a demo switch within one local app. They are not separate authenticated roles. The monitor polls high-level active stages every two seconds and then shows the saved trace after the response finishes. Short stages may finish between polls; internal model tokens are not streamed.
-
-## Originality and submission
-
-Relay's router, traces, replay, feedback workflow, UI, and tests are implemented in this repository. The README and test cases let evaluators reproduce the demonstrated flows.
