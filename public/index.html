@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>Relay — intelligent support desk</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/interfaces.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">R<span>↗</span></div><div><strong>relay</strong><small>SUPPORT INTELLIGENCE</small></div></div>
+      <button id="newChat" class="new-chat"><span>＋</span> New conversation</button>
+      <div class="side-label">WORKSPACE</div>
+      <button class="side-link" data-view="chat"><span>◫</span> Customer view</button>
+      <button class="side-link" data-view="operations"><span>⌁</span> Decision monitor</button>
+      <button class="side-link" data-view="insights"><span>▥</span> Insights & feedback</button>
+      <button class="side-link" data-view="knowledge"><span>▤</span> Knowledge base</button>
+      <div class="side-label recent-label">RECENT CONVERSATIONS</div>
+      <div id="conversationList" class="conversation-list"></div>
+      <div class="sidebar-bottom"><span class="avatar">JD</span><div><strong>Demo workspace</strong><small>Support operations</small></div><span class="dots">···</span></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar"><div class="breadcrumb">Relay <span>/</span> <strong id="pageTitle">Customer support</strong></div><div class="top-actions"><div class="interface-switch" role="group" aria-label="Choose interface"><button data-view="chat" class="active">Customer view</button><button data-view="operations">Company view</button></div><span id="modeBadge" class="mode-badge">Loading…</span></div></header>
+      <section id="chatView" class="view chat-view">
+        <div class="chat-top"><div><div class="eyebrow">CUSTOMER SUPPORT</div><h1>How can we help? <span class="live-dot"></span></h1><p>Ask about an order, shipping, returns, or refunds.</p></div><div class="chat-actions"><button id="customerNewChat" class="secondary-button">New chat</button><button id="ticketButton" class="secondary-button" disabled>Request human review</button></div></div>
+        <div class="chat-grid">
+          <div class="conversation-panel">
+            <div id="messages" class="messages"><div class="welcome"><div class="welcome-icon">✳</div><h2>How can we help?</h2><p>Ask about shipping, refunds, returns, or a more complex policy case.</p><div class="suggestions"><button data-prompt="When will my refund arrive?">When will my refund arrive? <span>↗</span></button><button data-prompt="Can I cancel my order after it ships?">Can I cancel an order? <span>↗</span></button><button data-prompt="My signed contract contradicts your refund policy.">My contract conflicts with your policy <span>↗</span></button></div></div></div>
+            <form id="chatForm" class="composer"><textarea id="messageInput" rows="1" maxlength="2000" placeholder="Ask a question about an order or policy…" aria-label="Message"></textarea><div class="composer-bottom"><span class="customer-help">A specialist can review complex cases.</span><button id="sendButton" type="submit" aria-label="Send message">↑</button></div></form>
+            <div class="composer-note">Demo policies are examples. Complex cases are sent for human review.</div>
+          </div>
+        </div>
+      </section>
+      <section id="operationsView" class="view content-view hidden"><div class="operations-header"><div><div class="eyebrow">COMPANY OPERATIONS</div><h1>Decision monitor</h1><p class="section-intro">Watch the current stage and inspect the recorded path of each completed question.</p></div><button id="replayButton" class="secondary-button" disabled><span>↺</span> Replay this conversation</button></div><div class="operations-controls"><label class="simulate"><input id="simulateOutage" type="checkbox"><span class="switch"></span> Simulate advanced outage for the next customer question</label><span id="operationsConversationLabel">No conversation selected</span></div><div id="operationsLive" class="operations-live hidden" role="status"></div><div class="operations-layout"><div class="content-card operations-list-card"><h2>Questions in this conversation</h2><p class="operations-hint">Select a question to inspect its routing path.</p><div id="operationsMessages" class="operations-message-list"></div></div><div class="content-card operations-detail-card"><div class="operations-detail-title"><div><h2>Decision path</h2><p class="operations-hint">Recorded from the actual response, including failures and fallback.</p></div><span class="live-label">RECORDED TRACE</span></div><div id="traceContent" class="trace-empty"><div class="trace-illustration">⌁</div><h3>Waiting for a question</h3><p>Each response will show the scope check, policy match, route, model, and outcome here.</p></div></div></div></section>
+      <section id="insightsView" class="view content-view hidden"><div class="eyebrow">CONTINUOUS IMPROVEMENT</div><h1>Insights & feedback</h1><p class="section-intro">Customer ratings create a review queue. Review weak answers, then compare routing changes through replay.</p><div id="metricCards" class="metric-grid"></div><div class="content-card"><div class="card-heading"><div><h2>Recent feedback</h2><p>Turn low-rated answers into reviewed preference pairs</p></div></div><div id="feedbackList"></div></div><div class="content-card"><div class="card-heading"><div><h2>Human review queue</h2><p>Requests submitted from conversations</p></div></div><div id="ticketList"></div></div><div class="content-card process-card"><h2>Improvement loop</h2><div class="process"><div><span>01</span><strong>Collect</strong><p>Capture ratings and reasons with each answer.</p></div><div><span>02</span><strong>Review</strong><p>Write a preferred answer beside the rejected one.</p></div><div><span>03</span><strong>Improve</strong><p>Correct content, tune thresholds, and retest.</p></div><div><span>04</span><strong>Train</strong><p>Export preference pairs for offline model tuning.</p></div></div><a class="export-link" href="/api/preferences/export" download>↓ Export preference dataset</a><p class="honesty-note">This build captures human preferences but does not automatically train a model.</p></div></section>
+      <section id="knowledgeView" class="view content-view hidden"><div class="eyebrow">APPROVED CONTENT</div><h1>Knowledge base</h1><p class="section-intro">Answers are grounded in these example policies. Replace them with your approved support documents before real use.</p><div id="knowledgeList" class="knowledge-grid"></div></section>
+    </main>
+  </div>
+  <div id="modalBackdrop" class="modal-backdrop hidden"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal-head"><div><div class="eyebrow">CONVERSATION LAB</div><h2 id="modalTitle">Replay this conversation</h2></div><button id="modalClose" class="icon-button" aria-label="Close">×</button></div><p class="modal-intro">Recompute routing from saved messages and model decisions. Compare estimated model work and latency across routes.</p><div class="threshold-control"><label for="threshold">Local route threshold <strong id="thresholdValue">0.72</strong></label><input id="threshold" type="range" min="0.3" max="0.95" step="0.01" value="0.72"><div class="range-hints"><span>More local answers</span><span>More advanced escalations</span></div></div><div id="replayResults"></div><div class="modal-footer"><span>No model calls are made during replay.</span><button id="rerunReplay" class="primary-button">Recalculate routes <span>↗</span></button></div></div></div>
+  <div id="reviewBackdrop" class="modal-backdrop hidden"><form id="reviewForm" class="modal review-modal" role="dialog" aria-modal="true" aria-labelledby="reviewTitle"><div class="modal-head"><div><div class="eyebrow">HUMAN PREFERENCE</div><h2 id="reviewTitle">Review answer</h2></div><button id="reviewClose" type="button" class="icon-button" aria-label="Close review">×</button></div><p class="modal-intro">Write the answer you would prefer a support agent to give. This pair can be exported for offline training.</p><div class="review-label">CUSTOMER QUESTION</div><div id="reviewQuestion" class="review-original"></div><div class="review-label">ORIGINAL ANSWER</div><div id="reviewOriginal" class="review-original"></div><label class="review-label" for="preferredAnswer">PREFERRED ANSWER</label><textarea id="preferredAnswer" required minlength="10" maxlength="3000" placeholder="Write a corrected, policy-grounded answer…"></textarea><div class="modal-footer"><span>Check policy before saving a preference.</span><button class="primary-button" type="submit">Save preference pair</button></div></form></div>
+  <div id="noteBackdrop" class="modal-backdrop hidden"><form id="noteForm" class="modal review-modal" role="dialog" aria-modal="true" aria-labelledby="noteTitle"><div class="modal-head"><div><div class="eyebrow">SUPPORT WORKFLOW</div><h2 id="noteTitle">Add a note</h2></div><button id="noteClose" type="button" class="icon-button" aria-label="Close note">×</button></div><p id="noteDescription" class="modal-intro"></p><label class="review-label" for="noteInput">NOTE</label><textarea id="noteInput" maxlength="1000" placeholder="Add helpful context…"></textarea><div class="modal-footer"><span>Optional</span><button id="noteSubmit" class="primary-button" type="submit">Save</button></div></form></div>
+  <div id="toast" class="toast hidden" role="status"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
