@@ -107,4 +107,4 @@ The automated journey covers a local FAQ answer, an unrelated coding request, si
 
 ## Originality and submission
 
-Relay's router, traces, replay, feedback workflow, UI, and tests are implemented in this repository. The README and test cases let evaluators reproduce the demonstrated flows. A short walkthrough video can be recorded from the running app for submission.
+Relay's router, traces, replay, feedback workflow, UI, and tests are implemented in this repository. The README and test cases let evaluators reproduce the demonstrated flows.
