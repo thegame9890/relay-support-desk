@@ -41,6 +41,12 @@ test('full support journey: local, fallback, replay, feedback, preference, ticke
     assert.equal(replay.comparisonMode, 'free');
     assert.equal(replay.totals.dispatcherCostUsd, 0);
     assert.ok(replay.totals.dispatcherWork < replay.totals.baselineWork);
+    const costs = await request('/api/costs');
+    assert.equal(costs.answeredQuestions, 3);
+    assert.deepEqual(costs.routes, { local: 1, advanced: 0, fallback: 1, outOfScope: 1 });
+    assert.equal(costs.relayApiUsd, 0);
+    assert.ok(costs.avoidedApiUsd > 0);
+    assert.equal(costs.avoidedPercent, 100);
     await request('/api/feedback', 'POST', { conversationId: conversation.id, messageId: local.assistantMessage.id, rating: 'down', note: 'Needs a clearer opening' });
     await request('/api/preferences', 'POST', { conversationId: conversation.id, messageId: local.assistantMessage.id, chosen: 'Your approved refund should reach your original payment method within 5–10 business days. Source: POL-REFUND-01' });
     const dataset = await request('/api/preferences/export');

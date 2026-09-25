@@ -51,5 +51,20 @@ body[data-interface="customer"] .messages{max-height:calc(100vh - 330px)}
 .operations-answer{border-top:1px solid #e8ecf2;padding-top:17px;margin-top:1px}
 .operations-answer p{white-space:pre-wrap;color:#36445b;font-size:11px;line-height:1.6;margin:0}
 .trace-pill.out_of_scope{background:#eef1f5;color:#607084}
+.cost-section{margin-top:5px}
+.cost-section .card-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cost-tag{font-size:9px;font-weight:800;letter-spacing:.8px;color:#7869d7;background:#f2efff;padding:7px 9px;border-radius:6px;white-space:nowrap}
+.cost-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-top:19px}
+.cost-figure{border:1px solid #e8ecf2;border-radius:11px;padding:17px;background:#fafbfe}
+.cost-figure small,.cost-figure span{display:block;color:#8491a3;font-size:10px}
+.cost-figure strong{display:block;font:800 23px Manrope,Arial,sans-serif;color:#273247;margin:7px 0}
+.cost-saving{background:#effaf4;border-color:#d7eee1}
+.cost-saving strong{color:#238458}
+.cost-projection{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px 17px;margin-top:11px;border:1px solid #e9e3ff;background:#f8f6ff;border-radius:10px}
+.cost-projection small{display:block;color:#7768d5;font-size:9px;font-weight:800;letter-spacing:.7px;margin-bottom:5px}
+.cost-projection strong{font:800 17px Manrope,Arial,sans-serif}
+.cost-projection strong span{font:600 11px Arial,sans-serif;color:#596578}
+.cost-projection>span{color:#8390a1;font-size:10px;line-height:1.5;text-align:right;max-width:260px}
+.cost-method{font-size:10px;line-height:1.6;color:#8995a5;margin:13px 0 0}
 @media(max-width:1100px){.operations-layout{grid-template-columns:1fr}.operations-list-card,.operations-detail-card{min-height:0}}
-@media(max-width:600px){.topbar{height:auto;min-height:66px;gap:8px;flex-wrap:wrap;padding:12px 16px}.top-actions{gap:8px}.interface-switch button{padding:7px}.operations-header,.operations-controls{flex-wrap:wrap}.operations-controls>span{width:100%}body[data-interface="customer"] .chat-view{width:100%}body[data-interface="company"] .sidebar{display:flex;width:54px;padding:16px 5px}}
+@media(max-width:600px){.topbar{height:auto;min-height:66px;gap:8px;flex-wrap:wrap;padding:12px 16px}.top-actions{gap:8px}.interface-switch button{padding:7px}.operations-header,.operations-controls{flex-wrap:wrap}.operations-controls>span{width:100%}.cost-grid{grid-template-columns:1fr}.cost-projection{display:block}.cost-projection>span{display:block;text-align:left;max-width:none;margin-top:9px}body[data-interface="customer"] .chat-view{width:100%}body[data-interface="company"] .sidebar{display:flex;width:54px;padding:16px 5px}}

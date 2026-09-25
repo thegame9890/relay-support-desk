@@ -2,6 +2,7 @@ const $ = selector => document.querySelector(selector);
 const state = { conversation: null, status: null, sending: false, view: 'chat', selectedTraceId: null, review: null, noteAction: null };
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const money = value => `$${Number(value || 0).toFixed(5)}`;
+const costMoney = value => `$${Number(value || 0).toFixed(Number(value) > 0 && Number(value) < 0.01 ? 5 : 2)}`;
 const api = async (path, options = {}) => {
   const response = await fetch(path, { headers: { 'content-type': 'application/json' }, ...options });
   const data = await response.json();
@@ -159,7 +160,9 @@ async function recalculateReplay() {
   } catch (error) { $('#replayResults').innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`; }
 }
 async function loadInsights() {
-  const summary = await api('/api/feedback/summary');
+  const [summary, costs] = await Promise.all([api('/api/feedback/summary'), api('/api/costs')]);
+  const c = costs;
+  $('#costComparison').innerHTML = `<div class="cost-grid"><div class="cost-figure"><small>Paid model for every answer</small><strong>${costMoney(c.baselineUsd)}</strong><span>Estimated baseline</span></div><div class="cost-figure"><small>Relay API charges</small><strong>${costMoney(c.relayApiUsd)}</strong><span>Recorded route estimates</span></div><div class="cost-figure cost-saving"><small>Estimated API charges avoided</small><strong>${costMoney(c.avoidedApiUsd)}</strong><span>${c.avoidedPercent}% below baseline</span></div></div><div class="cost-projection"><div><small>IF 10,000 QUESTIONS HAD THE SAME MIX</small><strong>${costMoney(c.projectedAvoidedPer10kUsd)} <span>estimated API charges avoided</span></strong></div><span>Based on ${c.answeredQuestions} recorded answer${c.answeredQuestions === 1 ? '' : 's'} · ${c.routes.local} small local · ${c.routes.advanced} advanced · ${c.routes.fallback} fallback · ${c.routes.outOfScope} redirected</span></div><p class="cost-method">Scenario: ${escapeHtml(c.assumptions.baseline)} at an assumed $${c.assumptions.premiumUsdPerMillionTokens} per million blended tokens. Tokens are estimated from text length (about ${c.assumptions.charactersPerToken} characters per token plus ${c.assumptions.fixedTokensPerAnswer} per answer); these are not provider token counts or a billed quote. The projection scales this sample and may change with traffic mix. Excludes ${escapeHtml(c.assumptions.excludes.toLowerCase())}.</p>`;
   $('#metricCards').innerHTML = `<div class="metric-card"><small>Total ratings</small><strong>${summary.total}</strong><span>Captured from support answers</span></div><div class="metric-card"><small>Helpful</small><strong>${summary.positive}</strong><span>Positive customer signals</span></div><div class="metric-card"><small>Needs review</small><strong>${summary.negative}</strong><span>Priority improvement queue</span></div>`;
   $('#feedbackList').innerHTML = summary.recent.length ? summary.recent.map(item => `<div class="feedback-item"><span class="rating-icon">${item.rating === 'up' ? '👍' : '👎'}</span><div><strong>${item.rating === 'up' ? 'Helpful response' : 'Needs review'} · ${escapeHtml(item.route)}</strong><p>${escapeHtml(item.note || 'No additional comment')}</p><small>${new Date(item.createdAt).toLocaleString()}</small></div>${item.rating === 'down' ? `<button data-review-conversation="${item.conversationId}" data-review-message="${item.messageId}">Review answer</button>` : ''}</div>`).join('') : '<div class="empty-state">No feedback yet. Rate an answer in the support desk to start the review queue.</div>';
   const tickets = await api('/api/tickets');

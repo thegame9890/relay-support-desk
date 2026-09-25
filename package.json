@@ -1,6 +1,6 @@
 {
-  "name": "support-traffic-controller",
-  "version": "0.1.0",
+  "name": "relay-support-desk",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {

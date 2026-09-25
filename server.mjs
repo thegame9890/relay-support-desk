@@ -7,6 +7,7 @@ import { routeWithJev, replayDecision } from './lib/jev.mjs';
 import { routeWithLocalDecision } from './lib/local-decision.mjs';
 import { localAnswer, advancedLocalAnswer, premiumAnswer, fallbackAnswer, outOfScopeAnswer } from './lib/providers.mjs';
 import { knowledge } from './lib/knowledge.mjs';
+import { summarizeCosts } from './lib/cost.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const publicDir = resolve(root, 'public');
@@ -74,6 +75,7 @@ async function handleApi(req, res, path) {
   });
   if (req.method === 'GET' && path === '/api/knowledge') return json(res, 200, knowledge.map(({ keywords, ...doc }) => doc));
   if (req.method === 'GET' && path === '/api/tickets') return json(res, 200, store.data.tickets.slice(0, 50));
+  if (req.method === 'GET' && path === '/api/costs') return json(res, 200, summarizeCosts(store.data.conversations));
   if (req.method === 'GET' && path === '/api/conversations') return json(res, 200, store.data.conversations.map(c => ({ id: c.id, createdAt: c.createdAt, preview: c.messages.find(m => m.role === 'user')?.text || 'New conversation', count: c.messages.length })));
   if (req.method === 'POST' && path === '/api/conversations') return json(res, 201, publicConversation(await store.createConversation()));
   const match = path.match(/^\/api\/conversations\/([a-f0-9-]+)(?:\/(messages|replay|tickets|progress))?$/);
