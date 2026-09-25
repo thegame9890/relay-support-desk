@@ -4,6 +4,10 @@ Relay is a customer support desk with a visible routing dispatcher. Its **recomm
 
 For the short judge setup and demo sequence, see [SUBMISSION.md](SUBMISSION.md).
 
+## Public-repository demo choice
+
+This hackathon solution is submitted in a public repository, so it does not include or require private API keys. Instead of depending on separate hosted-provider credentials, the default setup runs the routing and customer answers with free local Ollama models. These are real local model calls: `qwen3:1.7b` handles routine questions and routing, while `deepseek-r1:8b` handles complex cases. The outage switch deliberately simulates a provider failure to demonstrate the deterministic fallback. Optional hosted adapters remain disabled in free mode, and `.env` is excluded from Git.
+
 ## Run it
 
 Requirements: Node.js 20 or newer and [Ollama](https://ollama.com/download/windows) with enough RAM and disk space for the two models. No npm installation or API key is needed. In PowerShell:
